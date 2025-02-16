@@ -115,13 +115,14 @@ class Shop:
         else:
             print("\nYou don't have enough gold for that item.")
 
-# Monster Class (Dragon, Goblin, etc.) with Tiers
+# Monster Class (Dragon, Goblin, etc.) with Tiers and Special Abilities
 class Monster:
     def __init__(self, name, health, attack, tier):
         self.name = name
         self.health = health
         self.attack = attack
         self.tier = tier
+        self.max_health = health  # Save the monster's maximum health for healing checks
 
     def monster_attack(self):
         return random.randint(self.attack - 5, self.attack + 5)
@@ -134,8 +135,38 @@ class Monster:
         elif self.tier == 3:
             return random.randint(70, 100)  # High-tier monsters
 
+    def special_ability(self, player):
+        if self.tier == 1:
+            # Tier 1 monsters: Basic attack boost
+            print(f"\n{self.name} performs a basic attack boost!")
+            return self.monster_attack()
+        elif self.tier == 2:
+            # Tier 2 monsters: Poison or healing ability
+            ability = random.choice(["Poison", "Heal"])
+            if ability == "Poison":
+                print(f"\n{self.name} poisons you! You take 10 damage over 3 turns.")
+                return 10  # Poison damage
+            elif ability == "Heal" and self.health < self.max_health * 0.5:  # Only heal if below 50% health
+                heal = random.randint(15, 25)
+                self.health += heal
+                print(f"\n{self.name} heals itself for {heal} health!")
+                return 0  # No damage but heals itself
+            else:
+                print(f"\n{self.name} attempts to heal, but is already at full health!")
+                return 0
+        elif self.tier == 3:
+            # Tier 3 monsters: Powerful AoE or self-buff
+            ability = random.choice(["AoE", "Self Buff"])
+            if ability == "AoE":
+                print(f"\n{self.name} casts a powerful AoE attack!")
+                return self.monster_attack() * 2  # AoE attack
+            elif ability == "Self Buff":
+                buff = random.randint(10, 30)
+                self.attack += buff
+                print(f"\n{self.name} buffs its attack by {buff}!")
+                return 0  # No damage but increases attack
+
     def ai_attack(self, player):
-        # Simple AI: Monster always attacks
         return self.monster_attack()
 
 # Grid-based World Class
@@ -251,84 +282,80 @@ class World:
             if choice == "1":
                 damage = self.player.attack_enemy()
                 monster.health -= damage
-                print(f"\nYou attack the {monster.name} and deal {damage} damage!")
+                print(f"\nYou attacked {monster.name} and dealt {damage} damage!")
             elif choice == "2":
                 defense = self.player.defend()
-                monster_attack = monster.ai_attack(self.player) - defense
-                if monster_attack > 0:
-                    self.player.health -= monster_attack
-                    print(f"\nYou defend! The {monster.name} deals {monster_attack} damage.")
-                else:
-                    print("\nYour defense was strong enough to block the attack!")
-            elif choice == "3" and isinstance(self.player, Mage):
+                print(f"\nYou defend with {defense} defense!")
+            elif isinstance(self.player, Mage) and choice == "3":
                 magic_damage = self.player.magic_attack()
                 monster.health -= magic_damage
-                print(f"\nYou cast a magic spell and deal {magic_damage} magic damage!")
+                print(f"\nYou used a Magic Attack on {monster.name} and dealt {magic_damage} damage!")
             else:
-                print("\nInvalid choice! Try again.")
-            
-            # Monster always attacks after the player
-            if monster.health > 0:
-                monster_attack = monster.ai_attack(self.player)
-                self.player.health -= monster_attack
-                print(f"\nThe {monster.name} attacks you and deals {monster_attack} damage!")
+                print("\nInvalid choice! Please try again.")
 
+            # Monster's turn to attack
+            if monster.health > 0:
+                special_ability_damage = monster.special_ability(self.player)
+                if special_ability_damage > 0:
+                    self.player.health -= special_ability_damage
+                    print(f"\n{monster.name} dealt {special_ability_damage} damage!")
+                else:
+                    print(f"\n{monster.name} uses a special ability!")
+
+            if self.player.health <= 0:
+                print("\nYou have been defeated! Game Over.")
+                break
             if monster.health <= 0:
                 print(f"\nYou defeated the {monster.name}!")
                 self.player.gold += monster.give_gold()
-                print(f"You earned {monster.give_gold()} gold!")
-                break  # End the loop after the monster is defeated
-            elif self.player.health <= 0:
-                print("\nYou have been defeated!")
-                print("Game Over.")
-                exit()  # Game ends if the player health reaches zero
+                print(f"\nYou received {monster.give_gold()} gold!")
+                break
 
-# Main Game Loop
-def main():
+# Game Loop
+def game_loop():
+    # Choose Player Class
     print("Choose your character class:")
     print("1. Knight")
     print("2. Archer")
     print("3. Mage")
+    class_choice = input("Enter 1, 2, or 3: ")
 
-    choice = input("Enter 1, 2, or 3: ")
-
-    if choice == "1":
+    if class_choice == "1":
         player = Knight()
-    elif choice == "2":
+    elif class_choice == "2":
         player = Archer()
-    elif choice == "3":
+    elif class_choice == "3":
         player = Mage()
     else:
-        print("Invalid choice. Defaulting to Knight.")
+        print("\nInvalid choice! Defaulting to Knight.")
         player = Knight()
 
+    # Create World
     world = World(player)
 
-    while True:
+    # Game loop
+    while player.health > 0:
         world.show_map()
-        print(f"\nYour current gold: {player.gold}")
-        print(f"Your current health: {player.health}")
-        print(f"Your current attack: {player.attack}")
-        print(f"Your current defense: {player.defense}")
-        print(f"Your current magic: {player.magic}")
-
         print("\nWhat would you like to do?")
         print("1. Move")
         print("2. Explore")
-        print("3. Quit Game")
+        print("3. Visit Shop")
+        choice = input("Enter 1, 2, or 3: ")
 
-        action = input("Enter 1, 2, or 3: ")
-
-        if action == "1":
-            direction = input("Which direction would you like to move? (north, south, east, west): ")
+        if choice == "1":
+            direction = input("Which direction would you like to move? (north/south/east/west): ")
             world.move_player(direction)
-        elif action == "2":
+        elif choice == "2":
             world.explore()
-        elif action == "3":
-            print("Thank you for playing!")
-            break
+        elif choice == "3":
+            world.visit_shop()
         else:
-            print("Invalid action. Please try again.")
+            print("Invalid choice!")
 
+        if player.health <= 0:
+            print("Game Over! You've been defeated.")
+            break
+
+# Start the Game
 if __name__ == "__main__":
-    main()
+    game_loop()
