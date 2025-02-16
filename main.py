@@ -1,6 +1,6 @@
 import random
 
-#PLAYER CLASSES
+# PLAYER CLASSES
 class Knight:
     def __init__(self):
         self.health = 150
@@ -52,7 +52,7 @@ class Mage:
         return random.randint(self.magic -10, self.magic +10)
 
 
- #SHOP SYSTEM
+ # SHOP SYSTEM
 class shop:
     def __init__(self):
         self.items = {
@@ -119,9 +119,37 @@ class shop:
             print("\nYou don't have enough gold for that item.")
 
 
-#DRAGON CLASS
-class Dragon:
-    def __init__(self, name, health, attack):
+# MONSTER CLASS CLASSES WITH TIERS
+class Monster:
+    def __init__(self, name, health, attack, tier):
         self.name = name
         self.health = health
         self.attack = attack
+        self.tier = tier
+
+    def monster_attack(self):
+        return random.randint(self.attack - 10, self.attack + 10)
+
+    def give_gold(self):
+        if self.tier == 1:
+            return random.randint(10, 20)  # LOW-TIER MONSTERS
+        elif self.tier == 2:
+            return random.randint(30, 50)  # MEDIUM TIER MONSTERS
+        elif self.tier == 3:
+            return random.randint(70, 100)  # HIGH TIER MONSTERS
+# GRID-BASED WORLD CLASS
+class World:
+    def __init__(self, player):
+        self.grid_size = 10 # 10X10 GRID
+        self.grid = [[' ' for _ in range(self.grid_size)] for _ in range(self.grid_size)]
+        self.player_x = 6  # INITIAL POSITION IN THE MIDDLE OF THE GRID (7TH ROW, 7TH COLUM)
+        self.player_y = 6
+        self.player = player
+        self.shop = shop()
+
+        # ADD RANDOM MONSTERS TO THE GRID
+        self.place_monsters()
+        self.place_shops()
+
+        # GAME STORY INTRODUCTION
+        self.story_introduction()
