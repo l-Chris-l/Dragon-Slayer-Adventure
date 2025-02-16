@@ -1,21 +1,20 @@
 import random
 
-# PLAYER CLASSES
+# Player Classes
 class Knight:
     def __init__(self):
         self.health = 150
         self.attack = 25
         self.defense = 15
         self.magic = 0
-        self.gold = 100
+        self.gold = 100  # Starting gold
         self.name = "Knight"
-    
+
     def attack_enemy(self):
-        return random.randint(self.attack -5, self.attack +5)
-    
-    def defend (self):
-        return random.randint(self.defense -3, self.defense +3)
-    
+        return random.randint(self.attack - 5, self.attack + 5)
+
+    def defend(self):
+        return random.randint(self.defense - 3, self.defense + 3)
 
 class Archer:
     def __init__(self):
@@ -23,15 +22,14 @@ class Archer:
         self.attack = 35
         self.defense = 10
         self.magic = 0
-        self.gold = 100
+        self.gold = 100  # Starting gold
         self.name = "Archer"
 
     def attack_enemy(self):
-        return random.randint(self.attack -10, self.attack +10)
-    
+        return random.randint(self.attack - 10, self.attack + 10)
+
     def defend(self):
-        return random.randint(self.defense -2, self.defense +2)
-    
+        return random.randint(self.defense - 2, self.defense + 2)
 
 class Mage:
     def __init__(self):
@@ -39,24 +37,23 @@ class Mage:
         self.attack = 15
         self.defense = 5
         self.magic = 40
-        self.gold = 100
+        self.gold = 100  # Starting gold
         self.name = "Mage"
 
     def attack_enemy(self):
-        return random.randint(self.attack -5, self.attack +5)
-    
+        return random.randint(self.attack - 5, self.attack + 5)
+
     def defend(self):
-        return random.randint(self.defense -2 self.defense +2)
-    
+        return random.randint(self.defense - 2, self.defense + 2)
+
     def magic_attack(self):
-        return random.randint(self.magic -10, self.magic +10)
+        return random.randint(self.magic - 10, self.magic + 10)
 
-
- # SHOP SYSTEM
-class shop:
+# Shop System with Potions, Armor, and Scrolls
+class Shop:
     def __init__(self):
         self.items = {
-           "Basic Health Potion": 20,
+            "Basic Health Potion": 20,
             "Greater Health Potion": 50,
             "Supreme Health Potion": 100,
             "Basic Armor": 50,
@@ -69,12 +66,12 @@ class shop:
         }
 
     def show_items(self):
-        print('\nWelcome to the Shop!')
+        print("\nWelcome to the Shop!")
         print("Available items:")
         for item, price in self.items.items():
             print(f"{item}: {price} gold")
 
-    def buy_items(self, player, item):
+    def buy_item(self, player, item):
         if item == "Basic Health Potion" and player.gold >= self.items[item]:
             player.gold -= self.items[item]
             player.health += 30
@@ -118,8 +115,7 @@ class shop:
         else:
             print("\nYou don't have enough gold for that item.")
 
-
-# MONSTER CLASS CLASSES WITH TIERS
+# Monster Class (Dragon, Goblin, etc.) with Tiers
 class Monster:
     def __init__(self, name, health, attack, tier):
         self.name = name
@@ -128,30 +124,35 @@ class Monster:
         self.tier = tier
 
     def monster_attack(self):
-        return random.randint(self.attack - 10, self.attack + 10)
+        return random.randint(self.attack - 5, self.attack + 5)
 
     def give_gold(self):
         if self.tier == 1:
-            return random.randint(10, 20)  # LOW-TIER MONSTERS
+            return random.randint(10, 20)  # Low-tier monsters
         elif self.tier == 2:
-            return random.randint(30, 50)  # MEDIUM TIER MONSTERS
+            return random.randint(30, 50)  # Medium-tier monsters
         elif self.tier == 3:
-            return random.randint(70, 100)  # HIGH TIER MONSTERS
-# GRID-BASED WORLD CLASS
+            return random.randint(70, 100)  # High-tier monsters
+
+    def ai_attack(self, player):
+        # Simple AI: Monster always attacks
+        return self.monster_attack()
+
+# Grid-based World Class
 class World:
     def __init__(self, player):
-        self.grid_size = 10 # 10X10 GRID
+        self.grid_size = 12  # Updated to 12x12 grid
         self.grid = [[' ' for _ in range(self.grid_size)] for _ in range(self.grid_size)]
-        self.player_x = 6  # INITIAL POSITION IN THE MIDDLE OF THE GRID (7TH ROW, 7TH COLUM)
+        self.player_x = 6  # Initial position in the middle of the grid (7th row, 7th column)
         self.player_y = 6
         self.player = player
-        self.shop = shop()
+        self.shop = Shop()
 
-        # ADD RANDOM MONSTERS TO THE GRID
+        # Add random monsters (dragons, goblins, etc.) to the grid
         self.place_monsters()
         self.place_shops()
 
-        # GAME STORY INTRODUCTION
+        # Game Story Introduction
         self.story_introduction()
 
     def story_introduction(self):
@@ -164,7 +165,7 @@ class World:
         print("Your adventure begins now.\n")
 
     def place_monsters(self):
-        # MONSTER DATA WITH DIFFERENT TIERS
+        # Monster data with different tiers (Tier 1: low, Tier 2: medium, Tier 3: high)
         monster_data = [
             ("Goblin", 50, 10, 1),
             ("Zombie", 60, 8, 1),
@@ -192,16 +193,16 @@ class World:
     def place_shops(self):
         shop_positions = random.sample([(random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1)) for _ in range(3)], 3)
         for x, y in shop_positions:
-            self.grid[x][y] = 'S'  # S STANDS FOR SHOP
+            self.grid[x][y] = 'S'  # S stands for Shop
 
     def show_map(self):
         print("\nCurrent Map:")
         for i in range(self.grid_size):
             for j in range(self.grid_size):
                 if i == self.player_x and j == self.player_y:
-                    print("P", end=" ")  # P REPRESENTS PLAYER'S POSITION
+                    print("P", end=" ")  # P represents Player's position
                 elif isinstance(self.grid[i][j], Monster):
-                    print("M", end=" ")  # M REPRESENTS MONSTER
+                    print("M", end=" ")  # M represents Monster
                 else:
                     print(self.grid[i][j], end=" ")
             print()
@@ -222,7 +223,7 @@ class World:
         tile = self.grid[self.player_x][self.player_y]
         if isinstance(tile, Monster):
             print(f"\nYou've encountered a {tile.name}!")
-            self.fight_monster(tile)
+            self.fight_monster(tile)  # Fix: Corrected to use 'tile' (or 'monster') here
         elif tile == 'S':
             self.visit_shop()
         else:
@@ -236,12 +237,9 @@ class World:
 
     def fight_monster(self, monster):
         print(f"\nA fierce battle begins against the {monster.name}!")
-        player_health = self.player.health
-        monster_health = monster.health
-
-        while player_health > 0 and monster_health > 0:
-            print(f"\nYour health: {player_health}")
-            print(f"{monster.name}'s health: {monster_health}")
+        while self.player.health > 0 and monster.health > 0:
+            print(f"\nYour health: {self.player.health}")
+            print(f"{monster.name}'s health: {monster.health}")
             print("What will you do?")
             print("1. Attack.")
             print("2. Defend.")
@@ -252,33 +250,40 @@ class World:
 
             if choice == "1":
                 damage = self.player.attack_enemy()
-                monster_health -= damage
+                monster.health -= damage
                 print(f"\nYou attack the {monster.name} and deal {damage} damage!")
             elif choice == "2":
                 defense = self.player.defend()
-                monster_attack = monster.monster_attack() - defense
+                monster_attack = monster.ai_attack(self.player) - defense
                 if monster_attack > 0:
-                    player_health -= monster_attack
+                    self.player.health -= monster_attack
                     print(f"\nYou defend! The {monster.name} deals {monster_attack} damage.")
                 else:
                     print("\nYour defense was strong enough to block the attack!")
             elif choice == "3" and isinstance(self.player, Mage):
                 magic_damage = self.player.magic_attack()
-                monster_health -= magic_damage
+                monster.health -= magic_damage
                 print(f"\nYou cast a magic spell and deal {magic_damage} magic damage!")
             else:
                 print("\nInvalid choice! Try again.")
             
-            if monster_health <= 0:
+            # Monster always attacks after the player
+            if monster.health > 0:
+                monster_attack = monster.ai_attack(self.player)
+                self.player.health -= monster_attack
+                print(f"\nThe {monster.name} attacks you and deals {monster_attack} damage!")
+
+            if monster.health <= 0:
                 print(f"\nYou defeated the {monster.name}!")
                 self.player.gold += monster.give_gold()
                 print(f"You earned {monster.give_gold()} gold!")
-            elif player_health <= 0:
+                break  # End the loop after the monster is defeated
+            elif self.player.health <= 0:
                 print("\nYou have been defeated!")
-                break
+                print("Game Over.")
+                exit()  # Game ends if the player health reaches zero
 
-
-# MAIN GAME LOOP
+# Main Game Loop
 def main():
     print("Choose your character class:")
     print("1. Knight")
@@ -320,11 +325,10 @@ def main():
         elif action == "2":
             world.explore()
         elif action == "3":
-            print("Thank you for playing! Goodbye!")
+            print("Thank you for playing!")
             break
         else:
-            print("Invalid choice! Please try again.")
+            print("Invalid action. Please try again.")
 
-# START THE GAME
 if __name__ == "__main__":
     main()
